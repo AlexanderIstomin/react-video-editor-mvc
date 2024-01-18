@@ -1,12 +1,13 @@
-import { Box } from "@mui/system";
 import { useCallback } from "react";
+import { Box } from "@mui/system";
 
-type TVideoTranscriptionLoaderProps = {
-  onFileLoaded: (file: string) => void;
-};
-const VideoTranscriptionLoader: React.FC<TVideoTranscriptionLoaderProps> = ({
-  onFileLoaded,
-}) => {
+import { useAppContext } from "../../../../../hooks/useAppContext";
+import parseVTT from "../../../../../utils/parseVTT";
+import parseSRT from "../../../../../utils/parseSRT";
+
+const VideoTranscriptionLoader: React.FC = () => {
+  const { setSubtitles } = useAppContext();
+
   const handleDragOver = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -14,29 +15,45 @@ const VideoTranscriptionLoader: React.FC<TVideoTranscriptionLoaderProps> = ({
     []
   );
 
+  const loadSubtitles = useCallback(
+    (content: string, type: string) => {
+      let subtitles = [];
+
+      if (type === "text/vtt") {
+        subtitles = parseVTT(content);
+      } else {
+        subtitles = parseSRT(content);
+      }
+
+      setSubtitles(subtitles);
+    },
+    [setSubtitles]
+  );
+
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-        onFileLoaded(URL.createObjectURL(event.dataTransfer.files[0]));
+        const file = event.dataTransfer.files[0];
+        loadSubtitles(URL.createObjectURL(file), file.type);
       }
     },
-    [onFileLoaded]
+    [loadSubtitles]
   );
 
   const handleClick = useCallback(() => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
-    fileInput.accept = ".srt";
+    fileInput.accept = ".srt,.vtt";
     fileInput.onchange = async (e: Event) => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files[0]) {
         const content = await target.files[0].text();
-        onFileLoaded(content);
+        loadSubtitles(content, target.files[0].type);
       }
     };
     fileInput.click();
-  }, [onFileLoaded]);
+  }, [loadSubtitles]);
 
   return (
     <Box
@@ -55,7 +72,7 @@ const VideoTranscriptionLoader: React.FC<TVideoTranscriptionLoaderProps> = ({
         background: "white",
       }}
     >
-      Click or Drop a Subtitles (SRT) File Here
+      Click or Drop a Subtitles (SRT, VTT) File Here
     </Box>
   );
 };

@@ -17,8 +17,8 @@ export type TAppContext = {
   mobileSidebarToggle: (status?: boolean) => void;
   setIsSidebarClosing: (value: boolean) => void;
   isMobileSidebarOpen: boolean;
-  subtitles: TTranscription[];
-  setSubtitles: (subtitles: TTranscription[]) => void;
+  subtitles: TTranscription[] | null;
+  setSubtitles: (subtitles: TTranscription[] | null) => void;
   setIsLogoEditorOpen: (value: boolean) => void;
   isLogoEditorOpen: boolean;
   logoEditorToggle: (status?: boolean) => void;
@@ -40,7 +40,7 @@ export default function AppContextProvider({
 
   const [isLogoEditorOpen, setIsLogoEditorOpen] = useState(false);
 
-  const [subtitles, setSubtitles] = useState<TAppContext["subtitles"]>([]);
+  const [subtitles, setSubtitles] = useState<TAppContext["subtitles"]>(null);
 
   const resetEditState = useCallback(() => {
     setCurrentSeekTime(0);

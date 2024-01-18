@@ -1,29 +1,20 @@
-import { Fragment, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { Box, Button } from "@mui/material";
 
-import parseSRT from "../../../../../utils/parseSRT";
 import SubtitleItem from "./SubtitleItem";
 
 import type TTranscription from "../../../../../types/TTranscription";
 import { useAppContext } from "../../../../../hooks/useAppContext";
 
-type TTranscriptFileProps = {
-  transcriptFile: string;
-  setTranscriptFile: (file: string) => void;
-};
-
-const TranscriptionsList: React.FC<TTranscriptFileProps> = ({
-  transcriptFile,
-  setTranscriptFile,
-}) => {
+const TranscriptionsList: React.FC = () => {
   const {
     setTimelineStartTime,
     setTimelineEndTime,
     setCurrentSeekTime,
     videoRef,
     subtitles,
-    setSubtitles,
     isProcessing,
+    setSubtitles,
   } = useAppContext();
 
   const handleSubtitleClick = useCallback(
@@ -46,17 +37,19 @@ const TranscriptionsList: React.FC<TTranscriptFileProps> = ({
     ]
   );
 
-  useEffect(() => {
-    if (transcriptFile) {
-      setSubtitles(parseSRT(transcriptFile));
-    }
-  }, [setSubtitles, transcriptFile]);
-
   if (!subtitles?.length) {
     return (
-      <Box>
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         Something went wrong.
-        <Button onClick={() => setTranscriptFile("")}>Try again</Button>
+        <Button onClick={() => setSubtitles(null)}>Try again</Button>
       </Box>
     );
   }

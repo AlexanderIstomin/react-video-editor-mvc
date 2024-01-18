@@ -1,9 +1,8 @@
-import { useState } from "react";
-
 import { Box } from "@mui/system";
 
 import TranscriptionLoader from "./TranscriptionLoader";
 import TranscriptionsList from "./TranscriptionsList";
+import { useAppContext } from "../../../../../hooks/useAppContext";
 
 type TVIdeoTranscriptionProps = {
   children?: React.ReactNode;
@@ -16,7 +15,7 @@ const VideoTranscriptionTab: React.FC<TVIdeoTranscriptionProps> = ({
   index,
   ...other
 }) => {
-  const [transcriptFile, setTranscriptFile] = useState("");
+  const { subtitles } = useAppContext();
 
   return (
     <Box
@@ -29,14 +28,11 @@ const VideoTranscriptionTab: React.FC<TVIdeoTranscriptionProps> = ({
       {...other}
     >
       {value === index && (
-        <div>
-          {!transcriptFile ? (
-            <TranscriptionLoader onFileLoaded={setTranscriptFile} />
+        <div style={{ width: "100%" }}>
+          {!subtitles?.length ? (
+            <TranscriptionLoader />
           ) : (
-            <TranscriptionsList
-              setTranscriptFile={setTranscriptFile}
-              transcriptFile={transcriptFile}
-            />
+            <TranscriptionsList />
           )}
         </div>
       )}
