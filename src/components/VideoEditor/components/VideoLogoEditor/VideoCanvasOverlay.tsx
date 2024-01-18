@@ -9,6 +9,7 @@ import LinearProgressWithLabel from "./LinearProgressWithLabel";
 const VideoCanvasOverlay: React.FC = () => {
   const { videoRef, isProcessing, logoEditorToggle } = useAppContext();
   const { overlayImageOnVideo, progress } = useEditVideoFile();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvas = useRef<fabric.Canvas | null>(null);
 
@@ -100,9 +101,15 @@ const VideoCanvasOverlay: React.FC = () => {
     fabricCanvas.current.discardActiveObject().renderAll();
     fabricCanvas.current.getElement().style.pointerEvents = "none";
 
+    const multiplier =
+      fabricCanvas.current.width && videoRef?.videoWidth
+        ? videoRef?.videoWidth / fabricCanvas.current.width
+        : 1;
+
     const imageUrl = fabricCanvas.current.toDataURL({
       format: "png",
       quality: 1,
+      multiplier,
     });
 
     const resultBlobUrl = await overlayImageOnVideo(imageUrl);

@@ -150,7 +150,7 @@ export default function useEditVideoFile() {
         "-i",
         "logo.png",
         "-filter_complex",
-        "[1:v]scale=iw*2:ih*2[img];[0:v][img]overlay",
+        "overlay",
         "-preset",
         "ultrafast",
         "-c:a",

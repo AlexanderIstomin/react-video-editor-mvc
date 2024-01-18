@@ -6,7 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
-    <AppContextProvider>
+    <>
       <CssBaseline />
       <Box sx={{ width: "100%", height: "100dvh" }}>
         <GlobalStyles
@@ -19,10 +19,12 @@ function App() {
           }}
         />
         <ErrorBoundary>
-          <VideoEditorWrapper />
+          <AppContextProvider>
+            <VideoEditorWrapper />
+          </AppContextProvider>
         </ErrorBoundary>
       </Box>
-    </AppContextProvider>
+    </>
   );
 }
 
