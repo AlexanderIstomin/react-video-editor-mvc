@@ -8,7 +8,6 @@
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@ffmpeg/util": "^0.12.1",
     "@mui/icons-material": "^5.15.4",
-    "@mui/joy": "^5.0.0-beta.22",
     "@mui/material": "^5.15.4",
     "@mui/system": "^5.15.4",
     "@testing-library/jest-dom": "^5.17.0",
@@ -52,6 +51,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@mui/types": "^7.2.13",
     "@types/fabric": "^5.3.6"
   }
 }
