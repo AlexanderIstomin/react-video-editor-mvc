@@ -1,63 +1,60 @@
 import type TTranscription from "../types/TTranscription";
 
-export default function parseVTT(vttContent: string): TTranscription[] {
-  const lines = vttContent.split("\n");
-
+export default function parseVTT(content: string): TTranscription[] {
   const subtitles: TTranscription[] = [];
+  const subtitleBlocks = content.match(
+    /^\d{2}:\d{2}:\d{2}.\d{3} --> \d{2}:\d{2}:\d{2}.\d{3}.*?\n.*?(?=\n\n|\n*$)/gms
+  );
 
-  const timeFormatRegex =
-    /(\d{2}):(\d{2}):(\d{2})\.(\d{3}) --> (\d{2}):(\d{2}):(\d{2})\.(\d{3})/;
+  if (!subtitleBlocks) return [];
 
-  let currentSubtitle: Partial<TTranscription> | null = null;
+  let previousSubtitle: TTranscription | null = null;
 
-  for (const line of lines) {
-    if (timeFormatRegex.test(line)) {
-      const match = line.match(timeFormatRegex);
+  subtitleBlocks.forEach((block) => {
+    const lines = block.split("\n");
+    const timecodeMatch = lines[0].match(
+      /(\d{2}:\d{2}:\d{2}.\d{3}) --> (\d{2}:\d{2}:\d{2}.\d{3})/
+    );
 
-      if (match) {
-        const startTimeHours = parseInt(match[1], 10);
-        const startTimeMinutes = parseInt(match[2], 10);
-        const startTimeSeconds = parseInt(match[3], 10);
-        const startTimeMilliseconds = parseInt(match[4], 10);
+    if (timecodeMatch) {
+      const startTimeInSeconds = Math.ceil(
+        convertTimeToSeconds(timecodeMatch[1].replace(",", "."))
+      );
 
-        const endTimeHours = parseInt(match[5], 10);
-        const endTimeMinutes = parseInt(match[6], 10);
-        const endTimeSeconds = parseInt(match[7], 10);
-        const endTimeMilliseconds = parseInt(match[8], 10);
+      const endTimeInSeconds = Math.floor(
+        convertTimeToSeconds(timecodeMatch[2].replace(",", "."))
+      );
 
-        const startTimeInSeconds =
-          startTimeHours * 3600 +
-          startTimeMinutes * 60 +
-          startTimeSeconds +
-          startTimeMilliseconds / 1000;
+      const text = lines.slice(1).join(" ").trim();
 
-        const endTimeInSeconds =
-          endTimeHours * 3600 +
-          endTimeMinutes * 60 +
-          endTimeSeconds +
-          endTimeMilliseconds / 1000;
-
-        currentSubtitle = {
+      if (
+        previousSubtitle &&
+        endTimeInSeconds - previousSubtitle.startTimeInSeconds < 10
+      ) {
+        // Merge with previous subtitle
+        previousSubtitle.endTimeInSeconds = endTimeInSeconds;
+        previousSubtitle.text += " " + cleanText(text);
+      } else {
+        // Create a new subtitle and add it to the array
+        previousSubtitle = {
           startTimeInSeconds,
           endTimeInSeconds,
-          text: "",
+          text: cleanText(text),
         };
+        subtitles.push(previousSubtitle);
       }
-    } else if (currentSubtitle) {
-      if (currentSubtitle.text) {
-        currentSubtitle.text += "\n" + line.trim();
-      } else {
-        currentSubtitle.text = line.trim();
-      }
-    } else if (line.trim() === "") {
-      // Ignore empty lines
-      continue;
     }
-    if (currentSubtitle && line.trim() === "") {
-      subtitles.push(currentSubtitle as TTranscription);
-      currentSubtitle = null;
-    }
-  }
+  });
 
   return subtitles;
+}
+
+function convertTimeToSeconds(time: string): number {
+  const [hours = 0, minutes = 0, seconds = 0] = time.split(":").map(Number);
+  const [sec = 0, milli = 0] = seconds.toString().split(".").map(Number);
+  return hours * 3600 + minutes * 60 + sec + milli / 1000;
+}
+
+function cleanText(text: string): string {
+  return text.replace(/<[^>]+>/g, "").trim();
 }

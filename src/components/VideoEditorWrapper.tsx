@@ -58,24 +58,35 @@ const VideoEditorWrapper: React.FC = () => {
   const handleDrop = useCallback(
     async (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
+
       if (isProcessing) {
         return;
       }
 
       if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-        const isPlayable = await checkIfcanPlayVideo(
-          event.dataTransfer.files[0]
-        );
+        const file = event.dataTransfer.files[0];
 
-        let videoBlob = URL.createObjectURL(event.dataTransfer.files[0]);
-
-        if (!isPlayable) {
-          videoBlob = await transcodeVideo(videoBlob);
+        if (!file.type.startsWith("video/")) {
+          return;
         }
 
-        if (videoBlob) {
-          setVideoFile(videoBlob);
-        }
+        const isPlayable = await checkIfcanPlayVideo(file);
+
+        const reader = new FileReader();
+
+        reader.onload = async () => {
+          let videoBlob = URL.createObjectURL(file);
+
+          if (!isPlayable) {
+            videoBlob = await transcodeVideo(videoBlob);
+          }
+
+          if (videoBlob) {
+            setVideoFile(videoBlob);
+          }
+        };
+
+        reader.readAsDataURL(file);
       }
     },
     [isProcessing, transcodeVideo]

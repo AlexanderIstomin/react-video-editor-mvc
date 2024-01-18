@@ -31,11 +31,13 @@ const VideoTranscriptionLoader: React.FC = () => {
   );
 
   const handleDrop = useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => {
+    async (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       if (event.dataTransfer.files && event.dataTransfer.files[0]) {
         const file = event.dataTransfer.files[0];
-        loadSubtitles(URL.createObjectURL(file), file.type);
+        const text = await file.text();
+
+        loadSubtitles(text, file.type);
       }
     },
     [loadSubtitles]
